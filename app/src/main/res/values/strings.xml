@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Чайный двор</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Контакты разработчиков</string>
+    <string name="contacts_to_developer_title">По вопросом разработки подобного приложения обращайтесь: </string>
+    <string name="contacts_to_developer_phone">89509062011</string>
+    <string name="contacts_to_developer_email">vadim.kurbasov@yandex.ru</string>
+
+    <string name="menu_tea">Чай</string>
+    <string name="menu_kofe">Кофе</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="admin_fragment">Админка</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="greetingAlertDialog">Приложение передает ваш заказ из корзины продавцу через Вацап.
+        Продавец свяжется с вами для уточнения формы оплаты, заказа или доставки.
+        Свои пожелания вы можете передатьв сообщении вместе со сформированным заказом.</string>
+</resources>

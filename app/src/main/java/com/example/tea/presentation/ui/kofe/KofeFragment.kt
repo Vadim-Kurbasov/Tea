@@ -1,0 +1,100 @@
+package com.example.tea.presentation.gallery
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import com.example.tea.R
+import com.example.tea.data.models.Product
+import com.example.tea.databinding.FragmentKofeBinding
+import com.example.tea.presentation.home.KofeViewModel
+import com.example.tea.presentation.ui.Adapters.PlantAdapter
+import com.example.tea.presentation.ui.MainActivity.TokenViewModel
+import com.example.tea.presentation.ui.showproductdialog.ShowProductDialogFragment
+import com.example.tea.presentation.ui.kofe.KofeViewModelFactory
+
+class KofeFragment : Fragment(), PlantAdapter.Listener {
+
+    private lateinit var token:String
+    private var adapter = PlantAdapter(this, "Кофе")
+
+    private var _binding: FragmentKofeBinding? = null
+    private val tokenViewModel: TokenViewModel by activityViewModels() //// Для обмена даннами между активити и фрагментами
+    private lateinit var kofeViewModel: KofeViewModel
+    private val binding get() = _binding!!
+
+    // Cистема флагов - вынужденная мера из-за поворотов экрана
+    companion object{
+        private var f = false
+        private  var compare = ""
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        f =false
+        _binding = FragmentKofeBinding.inflate(inflater, container, false)
+        val root: View = binding.root
+
+        binding.rcView1.layoutManager = GridLayoutManager(context, 3)
+        binding.rcView1.adapter = adapter
+
+        tokenViewModel.messageFromactivityToken.observe(viewLifecycleOwner) {
+            token = it
+            kofeViewModel = ViewModelProvider(this, KofeViewModelFactory(token = it)).get(KofeViewModel::class.java)
+            kofeViewModel.initAdapter(binding.rcView1,adapter)
+            getObserves()
+        }
+
+        // Refresh function for the layout
+        binding.refreshLayout.setOnRefreshListener{
+            //Обязательно R.id.nav_home чтобы обновить свой фрагмент
+            val navOptions = NavOptions.Builder().setPopUpTo(R.id.nav_host_fragment_content_main, true).build()
+            findNavController().navigate(R.id.nav_gallery, null, navOptions)
+            binding.refreshLayout.isRefreshing = false
+        }
+        return root
+    }
+
+    fun getObserves() {
+        kofeViewModel.progressBarVisibility.observe(viewLifecycleOwner){
+            binding.progressBar.isVisible  = it
+        }
+        kofeViewModel.recyclerLiveData.observe(viewLifecycleOwner) {
+            binding.rcView1.adapter = it.adapter
+        }
+
+        tokenViewModel.productLiveData.observe(viewLifecycleOwner){
+            if(f ==true && compare != it.title) {
+                ShowProductDialogFragment.newInstance(
+                    it.title,
+                    it.prise,
+                    "Кофе",
+                    "$token"
+                ).show(parentFragmentManager, ShowProductDialogFragment.TAG)
+            }
+            compare = it.title
+        }
+    }
+
+    override fun onClick(product: Product) {
+        super.onClick(product)
+        f = true
+        compare = ""
+        tokenViewModel.productLiveData.value = product
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

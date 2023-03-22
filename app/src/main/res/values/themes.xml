@@ -1,0 +1,51 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Tea" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/teacolor</item>
+        <item name="colorPrimaryVariant">#B39F7A</item>
+
+        <item name="colorOnPrimary">@color/black</item>
+        <!--  <item name="colorOnPrimary">@color/white</item>-->
+         <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/tea</item>
+        <item name="colorSecondaryVariant">@color/tea</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+
+        <!-- Customize your theme here. -->
+
+        <!--Ниже 2 строки меняю цвет и иконку гамбургера и 3 точки-->
+        <item name="actionOverflowButtonStyle">@style/OverFlow</item>
+        <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
+    </style>
+    <style name="OverFlow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:src">@drawable/baseline_more_vert</item>
+    </style>
+
+    <style name="DrawerArrowStyle" parent="@style/Widget.AppCompat.DrawerArrowToggle">
+        <item name="spinBars">true</item>
+        <item name="color">#261e10</item>
+    </style>
+
+
+    <style name="Theme.Tea.Launcher">
+        <item name="android:windowBackground">@drawable/launch_screen</item>
+        <!-- Чтобы задать цвет фона лаунчера должны быть одинаковые цвета здесь и в drawable/launch_screen -->
+         <item name="colorPrimaryDark">@color/teacolor</item>
+
+    </style>
+
+
+
+    <style name="Theme.Tea.NoActionBar">
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.Tea.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.Tea.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+</resources>
