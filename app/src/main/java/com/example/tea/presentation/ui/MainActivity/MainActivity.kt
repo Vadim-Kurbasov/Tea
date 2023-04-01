@@ -30,7 +30,6 @@ import com.example.tea.domain.models.GreetingTextDomainModel
 import com.example.tea.domain.usecase.GetGreetingTextUseCase
 import com.example.tea.domain.usecase.SaveGreetingTextUseCase
 import com.example.tea.domain.usecase.WorkWithKorzinaUseCase
-import com.example.tea.presentation.gallery.KofeFragment
 import com.example.tea.presentation.ui.ActivityForAdmin.ActivityForAdmin
 import com.example.tea.presentation.ui.korsinadialog.KorsinaDialogFragment
 import com.example.tea.presentation.ui.showproductdialog.ItemKorsina
@@ -75,11 +74,6 @@ class MainActivity : AppCompatActivity() {
             if(it!="")  {
                 token = it
                 sendTokenToFragments()
-
-//                this.supportFragmentManager.beginTransaction()
-//                    .add(R.id.nav_host_fragment_content_main, KofeFragment.newInstance())
-//                    .commit()
-
             }
         }
         binding = ActivityMainBinding.inflate(layoutInflater)

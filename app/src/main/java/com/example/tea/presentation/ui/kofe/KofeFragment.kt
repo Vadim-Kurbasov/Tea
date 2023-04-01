@@ -28,10 +28,6 @@ class KofeFragment : Fragment(), PlantAdapter.Listener {
     companion object {  // Cистема флагов - вынужденная мера из-за поворотов экрана
         private var f = false
         private var compare = ""
-
-//        private const val ARG_SECTION_NUMBER = "section_number"
-//        @JvmStatic
-         fun newInstance() = KofeFragment()
     }
 
     override fun onCreateView(
@@ -122,14 +118,3 @@ class KofeFragment : Fragment(), PlantAdapter.Listener {
     }
 }
 
-
-//
-//const val TAG = "2"
-//@JvmStatic
-//fun newInstance(): KofeFragment {
-//    return KofeFragment().apply {
-//        arguments = Bundle().apply {
-//
-//        }
-//    }
-//}
