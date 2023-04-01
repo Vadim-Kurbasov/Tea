@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#C5BFBF"
-    >
+    android:background="#C5BFBF">
 
     <ScrollView
         android:id="@+id/scrollView2"
@@ -65,16 +64,16 @@
                 android:text="оформить заказ" />
 
             <TextView
+                android:id="@+id/textForClient"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textForClient"
                 android:layout_marginLeft="50dp"
                 android:layout_marginRight="50dp"
-                android:textStyle="bold"
                 android:gravity="center"
                 android:text="С вами свяжется продавец для уточнения способа оплаты и доставки."
+                android:textStyle="bold"
 
-               />
+                />
 
             <EditText
                 android:id="@+id/editTelef"
@@ -126,7 +125,7 @@
                 android:ems="10"
                 android:gravity="center"
                 android:hint="Адрес"
-                tools:ignore="MissingConstraints"  />
+                tools:ignore="MissingConstraints" />
 
 
             <LinearLayout
@@ -161,11 +160,11 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_marginBottom="10dp">
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/textViewDate"
@@ -223,8 +222,7 @@
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="10dp"
                 android:background="#F6F2F2"
-                tools:ignore="MissingConstraints">
-            </androidx.recyclerview.widget.RecyclerView>
+                tools:ignore="MissingConstraints"></androidx.recyclerview.widget.RecyclerView>
 
         </LinearLayout>
 

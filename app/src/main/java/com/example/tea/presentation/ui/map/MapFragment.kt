@@ -13,7 +13,7 @@ import com.example.tea.presentation.home.MapViewModel
 class MapFragment : Fragment() {
 
     private var _binding: FragmentSlideshowBinding? = null
-    private var token:String=""
+    private var token: String=""
     private val adminViewModel: MapViewModel by activityViewModels() //// Для обмена даннами между активити и фрагментами
     private val binding get() = _binding!!
 

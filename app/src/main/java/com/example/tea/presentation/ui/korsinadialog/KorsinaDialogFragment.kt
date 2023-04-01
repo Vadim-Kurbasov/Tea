@@ -11,6 +11,7 @@ import android.view.WindowManager
 import android.widget.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,12 +24,14 @@ import com.example.tea.domain.models.WhatsAppModelDomain
 import com.example.tea.domain.usecase.WhatsAppUseCase
 import com.example.tea.presentation.ui.Adapters.KorsinaAdapter
 import com.example.tea.presentation.ui.MainActivity.MainActivity
+import com.example.tea.presentation.ui.MainActivity.TokenViewModel
 import com.example.tea.presentation.ui.showproductdialog.ItemKorsina
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
+
+    private val tokenViewModel: TokenViewModel by activityViewModels()
 
     val domainWhatsAppInterface by lazy(LazyThreadSafetyMode.NONE) { WhatsAppRepository(
         WhatsAppImp(this, requireContext())
@@ -69,7 +72,7 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        korsinaDialogFragmentViewModel = ViewModelProvider(this, KorsinaDialogFragmentViewModelFactory(requireContext(), this)).get(
+        korsinaDialogFragmentViewModel = ViewModelProvider(this, KorsinaDialogFragmentViewModelFactory(requireContext())).get(
             KorsinaDialogFragmentViewModel::class.java)
 
         rcViewKorsina = view.findViewById(R.id.rcViewKorsina)
@@ -92,10 +95,6 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         rcViewKorsina.adapter = adapter
         korsinaDialogFragmentViewModel.initAdapter(rcViewKorsina, adapter)
 
-
-//        val boldItalicTypeface = Typeface.defaultFromStyle(Typeface.BOLD_ITALIC)
-//        val nornalTypeface = Typeface.defaultFromStyle(Typeface.NORMAL)
-
         btDostavka.setOnClickListener(){
             korsinaDialogFragmentViewModel.setEditTextAdresVisibility(true)
             korsinaDialogFragmentViewModel.setRadioKorsinaGroupVisibility(false)
@@ -111,6 +110,7 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         }
         buttonClear.setOnClickListener(){
             korsinaDialogFragmentViewModel.clearKorsina()
+            (activity as MainActivity?)?.makeKorsinaColorWhite()
             dismiss()
         }
         val buttonClose = view.findViewById<Button>(R.id.buttClos)
@@ -159,7 +159,9 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
     }
 
     fun sendWhatsApp(dateAndTime: String){
-        var strToSend:String = ""
+        var strToSend = ""
+
+        korsinaDialogFragmentViewModel.beforeSending()
 
         for(i in korsinaDialogFragmentViewModel.finishedKorsinsList.indices) run {
             strToSend += korsinaDialogFragmentViewModel.finishedKorsinsList[i].name +
@@ -168,7 +170,7 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
                     ", Сумма: " + korsinaDialogFragmentViewModel.finishedKorsinsList[i].itog +"\n"
         }
 
-        strToSend+= "Итог: " + korsinaDialogFragmentViewModel.allItogLiveData.value + " р." + "\n"+
+        strToSend+= "К оплате: " + korsinaDialogFragmentViewModel.allItogLiveData.value + " р." + "\n"+
                 clientName.text.toString() + "\n"+
                 dostavkaOrSamovivoz + ":" + " " + adresdostavkaOrSamovivoz + "\n"+
                 dateAndTime
@@ -232,6 +234,7 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         }
     }
 
+
     fun getObserves() {
 
         korsinaDialogFragmentViewModel.typefaceDostavkaLiveData.observe(viewLifecycleOwner){
@@ -240,7 +243,6 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         korsinaDialogFragmentViewModel.typefaceSamovivozLiveData.observe(viewLifecycleOwner){
             btSamovivoz.typeface = it
         }
-
         korsinaDialogFragmentViewModel.btRegisterOrderVisibility.observe(viewLifecycleOwner){
             btRegisterOrder.isVisible = it
         }
@@ -277,7 +279,6 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         korsinaDialogFragmentViewModel.buttonClearVisibility.observe(viewLifecycleOwner){
             buttonClear.isVisible = it
         }
-
         korsinaDialogFragmentViewModel.dateLiveData.observe(viewLifecycleOwner){
             textViewDate.text = it
         }
@@ -287,13 +288,12 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         korsinaDialogFragmentViewModel.allItogLiveData.observe(viewLifecycleOwner){
             allItog = it.toString()
         }
-
         korsinaDialogFragmentViewModel.recyclerKorsinaLiveData.observe(viewLifecycleOwner){
             rcViewKorsina.adapter = adapter
             rcViewKorsina.adapter = it.adapter
         }
         korsinaDialogFragmentViewModel.allItogLiveData.observe(viewLifecycleOwner){
-            itog.text = "Итог " + it.toString() + " р"
+            itog.text = "К оплате: " + it.toString() + " р"
         }
     }
 
@@ -302,9 +302,12 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         super.onClickButtonDelete(kors, it, pos, bind, korsinaList)
         if(korsinaList.size == 1) {
             korsinaDialogFragmentViewModel.deleteItemList(pos)
+            (activity as MainActivity?)?.makeKorsinaColorWhite() // Для обновления кнопки fab
              dismiss()
         } else{
             korsinaDialogFragmentViewModel.deleteItemList(pos)
+
+            tokenViewModel.countDelKorsinaLiveData.value = korsinaList.size // Тоже для обновления кнопки fab
         }
     }
 
@@ -324,12 +327,11 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
             WindowManager.LayoutParams.WRAP_CONTENT
         )
     }
-
     override fun onDestroy() {
         super.onDestroy()
-        (activity as MainActivity?)?.chekKorsinaColor()
+       // Для обновления PlаntAdapter
+        tokenViewModel.booleanCloseDialogFragmentsLiveData.value = true
     }
-
     companion object {
         const val TAG = "Dialog"
         fun newInstance(): KorsinaDialogFragment {
@@ -338,38 +340,3 @@ class KorsinaDialogFragment: DialogFragment(), KorsinaAdapter.Listener {
         }
     }
 }
-
-
-
-
-//        val radioKorsinaGroup =  view.findViewById<RadioGroup>(R.id.radioKorsina)
-//
-//        for(i in 0 until adressList.size) {
-//            val radioButton = RadioButton(context)
-//            radioButton.setText(adressList[i])
-//            buttonList.add(radioButton)
-//            radioKorsinaGroup.addView(buttonList[i])
-//
-//            radioButton.setOnClickListener(){
-//                Log.d("444","${radioButton.text}")
-//            }
-////            radioButton.setOnLongClickListener(){
-////                Log.d("555","${radioButton.text}")
-////                adressList.removeAt(i)
-////                return@setOnLongClickListener true
-////            }
-//
-//        }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-//        var buttonList = ArrayList<RadioButton>()
-//
-//        var adressList = ArrayList<String>()
-//        adressList.add("11111")
-//        adressList.add("22222")
-//        adressList.add("33333")
-//        adressList.add("44444")
-
-////////////////////////////////////////////////////////////////////////////////////////////

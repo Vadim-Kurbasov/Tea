@@ -38,23 +38,14 @@ class ShowProductDialogFragment : DialogFragment(){
     }
 
     private lateinit var showProductViewModel: ShowProductViewModel
-
     lateinit var pager1: ViewPager
-
     lateinit var token: String
     lateinit var choiseFolder: String
     lateinit var nameFolder: String
-
     lateinit var tvNameProd:TextView
     lateinit var tvDescribe: TextView
     lateinit var tvPrise : TextView
-    lateinit var tvCount : TextView
-
-    lateinit var btPlus : Button
-    lateinit var btMinus : Button
-    lateinit var buttonOrder : Button
     lateinit var buttonClose : Button
-
     lateinit private var adapterImageProduct: AdapterImageProduct
 
     override fun onCreateView(
@@ -79,22 +70,7 @@ class ShowProductDialogFragment : DialogFragment(){
         tvNameProd = view.findViewById(R.id.textViewNameProduct)
         tvDescribe = view.findViewById(R.id.textViewDescribeProduct)
         tvPrise = view.findViewById(R.id.textViewPriseProduct)
-        tvCount = view.findViewById(R.id.textViewCount)
-        btPlus = view.findViewById(R.id.buttonPlus)
-        btMinus = view.findViewById(R.id.buttonMinus)
-        buttonOrder = view.findViewById(R.id.buttonOrder)
         buttonClose = view.findViewById(R.id.buttonClose)
-
-        btPlus.setOnClickListener(){
-            showProductViewModel.setCount("plus")
-        }
-        btMinus.setOnClickListener(){
-            showProductViewModel.setCount("minus")
-        }
-        buttonOrder.setOnClickListener(){
-            showProductViewModel.putItemVkorsinu()
-            dismiss()
-        }
         buttonClose.setOnClickListener(){
             dismiss()
         }
@@ -118,14 +94,11 @@ class ShowProductDialogFragment : DialogFragment(){
             tvDescribe.text = it
         }
         showProductViewModel.summaLiveData.observe(viewLifecycleOwner){
-            tvPrise.text = "Сумма: $it"
-        }
-        showProductViewModel.countLiveData.observe(viewLifecycleOwner){
             if(choiseFolder == "Чай"|| choiseFolder == "Кофе") {
-                tvCount.text = "$it гр"
+                tvPrise.text = "Цена: " + "$it" + " р за 100 гр"
             }
             else{
-                tvCount.text = "$it шт"
+                tvPrise.text = "Цена: " + "$it" + " р"
             }
         }
     }

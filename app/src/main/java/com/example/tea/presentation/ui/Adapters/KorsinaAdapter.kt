@@ -71,10 +71,22 @@ class KorsinaAdapter (val listener: KorsinaAdapter.Listener) : RecyclerView.Adap
     }
 
     //  В случае отображения готового массива
+
     fun addAll(list : List<ItemKorsina>){
         korsinaList.clear()
         korsinaList.addAll(list)
       //  notifyDataSetChanged()
+    }
+    @SuppressLint("NotifyDataSetChanged")
+     fun removeItem(pos: Int){
+         korsinaList.removeAt(pos)
+         notifyDataSetChanged()
+     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun clearAll(){
+        korsinaList.clear()
+        notifyDataSetChanged()
     }
 
     // Интерфейс чтобы работать с элементами recyclerView из FragmentDialogKorsina

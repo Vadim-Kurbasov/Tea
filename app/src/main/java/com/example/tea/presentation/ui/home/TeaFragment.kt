@@ -8,11 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavOptions
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.tea.R
 import com.example.tea.data.models.Product
 import com.example.tea.databinding.FragmentTeaBinding
 import com.example.tea.presentation.ui.Adapters.PlantAdapter
@@ -27,12 +23,13 @@ class TeaFragment : Fragment(), PlantAdapter.Listener {
     private val tokenViewModel: TokenViewModel by activityViewModels() //// Для обмена даннами между активити и фрагментами
     private lateinit var teaViewModel: TeaViewModel
     private val binding get() = _binding!!
-    lateinit var recycler: RecyclerView
 
-    // Cистема флагов - вынужденная мера из-за поворотов экрана
-    companion object{
+    companion object{ // Cистема флагов - вынужденная мера из-за поворотов экрана
         private  var f = false
         private  var compare = ""
+
+
+
     }
 
     override fun onCreateView(
@@ -40,26 +37,30 @@ class TeaFragment : Fragment(), PlantAdapter.Listener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        f=false
+        f = false
         _binding = FragmentTeaBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        recycler = binding.rcView1
-        binding.rcView1.layoutManager = GridLayoutManager(context, 3)
+        binding.rcView1.layoutManager = GridLayoutManager(context, 2)
         binding.rcView1.adapter = adapter
 
         tokenViewModel.messageFromactivityToken.observe(viewLifecycleOwner) {
             token = it
-            teaViewModel = ViewModelProvider(this, TeaViewModelFactory(token = it)).get(TeaViewModel::class.java)
+            teaViewModel = ViewModelProvider(this, TeaViewModelFactory(
+                token = it,
+                tokenViewModel= tokenViewModel,
+                context = requireContext())).get(TeaViewModel::class.java)
             teaViewModel.initAdapter(binding.rcView1,adapter)
+            teaViewModel.setKorzObj()
           getObserves()
         }
 
         // Refresh function for the layout
         binding.refreshLayout.setOnRefreshListener{
             //Обязательно R.id.nav_home чтобы обновить свой фрагмент
-            val navOptions = NavOptions.Builder().setPopUpTo(R.id.nav_host_fragment_content_main, true).build()
-            findNavController().navigate(R.id.nav_home, null, navOptions)
+          //  val navOptions = NavOptions.Builder().setPopUpTo(R.id.nav_host_fragment_content_main, true).build()
+          //  findNavController().navigate(R.id.nav_home, null, navOptions)
+            teaViewModel.reloadPlantAdapter()
             binding.refreshLayout.isRefreshing = false
         }
         return root
@@ -83,6 +84,9 @@ class TeaFragment : Fragment(), PlantAdapter.Listener {
             }
             compare = it.title
         }
+        tokenViewModel.booleanCloseDialogFragmentsLiveData.observe(viewLifecycleOwner){
+            teaViewModel.reloadPlantAdapter()
+        }
    }
 
     override fun onClick(product: Product) {
@@ -92,8 +96,36 @@ class TeaFragment : Fragment(), PlantAdapter.Listener {
         tokenViewModel.productLiveData.value = product
     }
 
+    override fun onClickButtonAddKorzina(product: Product){
+        teaViewModel.putItemVkorsinu(product)
+    }
+
+    override fun setCountPlus(product: Product, pos: Int, count: Int){
+        val plusMinus = "plus"
+        teaViewModel.setCount(count, plusMinus, product)
+    }
+
+    override fun setCountMinus(product: Product, pos: Int, count: Int){
+        val plusMinus = "minus"
+        teaViewModel.setCount(count, plusMinus, product)
+        if(count == 50){ // 50 тольк если чай ил кофе. в другом случае 0
+            teaViewModel.deleteItemKorsina(product, pos)
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
+
+
+//
+//@JvmStatic
+//fun newInstance(): TeaFragment {
+//    return TeaFragment().apply {
+//        arguments = Bundle().apply {
+//
+//        }
+//    }
+//}

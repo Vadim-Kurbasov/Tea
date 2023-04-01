@@ -11,14 +11,12 @@ import com.example.tea.presentation.ui.showproductdialog.ItemKorsina
 import java.util.*
 
 class KorsinaDialogFragmentViewModel(
-   val getKorsinuUseCase: GetKorsinaUseCase,
-   val saveKorsinuUseCase: SaveKorsinuUseCase,
    val creatVadimFolderUseCase: CreatVadimFolderUseCase,
-   val showTostUseCase: ShowTostUseCase,
-   val getClientNameUseCase: GetClientNameUseCase,
+       getClientNameUseCase: GetClientNameUseCase,
    val saveClientNameUseCase: SaveClientNameUseCase,
-   val getAdresUseCase: GetAdresUseCase,
-   val saveAdresUseCase: SaveAdresUseCase
+       getAdresUseCase: GetAdresUseCase,
+   val saveAdresUseCase: SaveAdresUseCase,
+   val workWithKorzinaUseCase: WorkWithKorzinaUseCase
 
 ): ViewModel(){
 
@@ -47,10 +45,8 @@ class KorsinaDialogFragmentViewModel(
     lateinit var adapterKorsina: KorsinaAdapter
 
     var finishedKorsinsList = ArrayList<ItemKorsina>()
-    var kosinaDomainModel: KosinaDomainModel
 
     init{
-
         typefaceDostavkaLiveData.value = Typeface.defaultFromStyle(Typeface.NORMAL)
         typefaceSamovivozLiveData.value = Typeface.defaultFromStyle(Typeface.NORMAL)
 
@@ -72,9 +68,10 @@ class KorsinaDialogFragmentViewModel(
         clientNameLiveData.value = getClientNameUseCase.execute()
         adresLiveData.value = getAdresUseCase.execute()
 
-        kosinaDomainModel = getKorsinuUseCase.execute()
-        finishedKorsinsList = kosinaDomainModel.korsinaList
-        allItog(finishedKorsinsList)
+        allItogLiveData.value = workWithKorzinaUseCase.allItog()
+    }
+    fun beforeSending(){
+        finishedKorsinsList = workWithKorzinaUseCase.getBasket().korsinaList
     }
 
     fun setDostavkaTypeface(style: Int){
@@ -83,7 +80,6 @@ class KorsinaDialogFragmentViewModel(
     fun setSamovivizTypeface(style: Int){
         typefaceSamovivozLiveData.value = Typeface.defaultFromStyle(style)
     }
-
     fun setBtRegisterOrderVisibility(boolean: Boolean){
         btRegisterOrderVisibility.value = boolean
     }
@@ -130,124 +126,42 @@ class KorsinaDialogFragmentViewModel(
         val clientNameModelDomain = ClientNameModelDomain(text = name)
         saveClientNameUseCase.execute(clientNameModelDomain)
     }
-
     fun saveAdres( adres: String){
         val adresModelDomain = AdresModelDomain(text = adres)
         saveAdresUseCase.execute(adresModelDomain)
     }
-
     fun initAdapter(recycViewKorsina: RecyclerView, adaptKorsina: KorsinaAdapter){
         recyclerKorsina = recycViewKorsina
         adapterKorsina = adaptKorsina
         showKorsina()
     }
-
     fun showKorsina(){
         recyclerKorsinaLiveData.value = recyclerKorsina
         recyclerKorsinaLiveData.value!!.adapter =  adapterKorsina
-        adapterKorsina.addAll(finishedKorsinsList)
+        adapterKorsina.addAll(workWithKorzinaUseCase.getBasket().korsinaList)
     }
-
     fun clearKorsina(){
-        finishedKorsinsList.clear()
-        kosinaDomainModel.korsinaList = finishedKorsinsList
-        allItog(finishedKorsinsList)
-        saveKorsinuUseCase.execute(kosinaDomainModel)
-        adapterKorsina.addAll(finishedKorsinsList)
-        showKorsina()
-        showTostUseCase.execute("Корзина пуста")
+        adapterKorsina.clearAll()
+        workWithKorzinaUseCase.clearBasket()
     }
-
     fun deleteItemList(pos: Int){
-        var newFinishedKorsinsList = ArrayList<ItemKorsina>()
-        kosinaDomainModel = getKorsinuUseCase.execute()
-        newFinishedKorsinsList = kosinaDomainModel.korsinaList
-        newFinishedKorsinsList.removeAt(pos)
-        finishedKorsinsList = newFinishedKorsinsList
-        allItog(finishedKorsinsList)
-        kosinaDomainModel.korsinaList = finishedKorsinsList
-        saveKorsinuUseCase.execute(kosinaDomainModel)
-        showKorsina()
-        if(finishedKorsinsList.isEmpty()){
-            showTostUseCase.execute("Корзина пуста")
-        }
+        adapterKorsina.removeItem(pos)
+        allItogLiveData.value =  workWithKorzinaUseCase.deleteItemBasket(pos)
     }
-
     fun setCount(pos: Int, itemKorsina: ItemKorsina, plusOrMinus: String){
-
-        if(plusOrMinus == "plus"){
-            if(itemKorsina.number.trim() == "Чай"|| itemKorsina.number.trim() == "Кофе"){
-                val coeff = itemKorsina.cena / 2
-                itemKorsina.itog = itemKorsina.itog + coeff
-                itemKorsina.count = itemKorsina.count + 50
-            }
-            else {
-                itemKorsina.itog = itemKorsina.itog + itemKorsina.cena
-                itemKorsina.count = itemKorsina.count + 1
-            }
+        val newItemKorsina = workWithKorzinaUseCase.setShtuk(itemKorsina, plusOrMinus)
+        val kosinaDomainModel = workWithKorzinaUseCase.getBasket()
+        kosinaDomainModel.korsinaList[pos] = newItemKorsina
+        workWithKorzinaUseCase.saveBasket(kosinaDomainModel)
+        var allItog = 0
+        for(x in kosinaDomainModel.korsinaList.indices){
+            allItog += kosinaDomainModel.korsinaList[x].itog
         }
-        if(plusOrMinus == "minus" && itemKorsina.count >1){
-            if(itemKorsina.number.trim() == "Чай"|| itemKorsina.number.trim() == "Кофе"){
-                val coeff = itemKorsina.cena / 2
-                if(itemKorsina.count >50) {
-                    itemKorsina.itog = itemKorsina.itog - coeff
-                    itemKorsina.count = itemKorsina.count - 50
-                }
-            }
-            else {
-                itemKorsina.itog = itemKorsina.itog - itemKorsina.cena
-                itemKorsina.count = itemKorsina.count - 1
-            }
-        }
-
-        finishedKorsinsList[pos] = itemKorsina
-        allItog(finishedKorsinsList)
-        adapterKorsina.replace(itemKorsina,pos)
-        kosinaDomainModel.korsinaList = finishedKorsinsList
-        saveKorsinuUseCase.execute(kosinaDomainModel)
+        allItogLiveData.value = allItog
+        adapterKorsina.replace(newItemKorsina,pos)
     }
-
-    fun allItog(list: ArrayList<ItemKorsina>){ // Подсчитывает общую сумму заказа
-        var allItog:Int =0
-        for(x in list.indices){
-            allItog += list[x].itog
-        }
-        allItogLiveData.value =allItog
-    }
-
     fun sendToVadim(creatFolderModelDomain: CreatFolderModelDomain){
         creatVadimFolderUseCase.execute(creatFolderModelDomain)
     }
 }
-
-
-//    fun sendOrderWhatsApp(clientName: String,
-//                          dostavkaOrSamovivoz: String,
-//                          adresdostavkaOrSamovivoz: String,
-//                          dateTime: String){
-//        var strToSend:String = ""
-//
-//        for(i in finishedKorsinsList.indices) run {
-//            strToSend += finishedKorsinsList[i].name +
-//                    " - Цена: " + finishedKorsinsList[i].cena +
-//                    ", Шт: "+ finishedKorsinsList[i].count +
-//                    ", Сумма: " + finishedKorsinsList[i].itog +"\n"
-//        }
-//
-//        strToSend+= "Итог: " + allItogLiveData.value + " р." + "\n"+
-//                clientName + "\n"+
-//                dostavkaOrSamovivoz + ":" + " " + adresdostavkaOrSamovivoz + "\n"+
-//                dateTime
-//
-//        val date = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(Date()).replace(":", "-")
-//
-//        val creatFolderModelDomain = CreatFolderModelDomain(
-//            "y0_AgAAAAAOOV-mAADLWwAAAADbEsfXQiTanJTcSSy6UjpR8FNxpO14wEs",
-//            "Заказы/Чай/" + allItogLiveData.value + "р " + date
-//        )
-//        creatVadimFolderUseCase.execute(creatFolderModelDomain)
-//
-//        val whatsAppModelDomain = WhatsAppModelDomain(strToSend = strToSend)
-//        //whatsAppUseCase.execute(whatsAppModelDomain)
-//    }
 

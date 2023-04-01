@@ -120,7 +120,8 @@ class GetListProductToDisplayImp: GetListProductToDisplayInterface {
                     if(getListProductToDisplayModel.choisenFolder=="Кофе") {
                         Object.kofeVM.showPlant(product)
                     }
-                }, 100)
+               // }, 100)
+                }, 1)
             }
             catch (e: FileNotFoundException) {e.printStackTrace() }
             catch (e: IOException) { e.printStackTrace() }

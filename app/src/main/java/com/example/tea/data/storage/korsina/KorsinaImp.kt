@@ -10,8 +10,11 @@ import kotlinx.coroutines.runBlocking
 
 class KorsinaImp(val context: Context): KorsinaInterface {
     override fun saveKorsina(korsinaModel: KorsinaModel) {
-        GlobalScope.launch {
-            KorsinaStoreManager.saveValue(context, "testKey", korsinaModel.korsinaList)
+        runBlocking {
+            val job =  GlobalScope.launch {
+                KorsinaStoreManager.saveValue(context, "testKey", korsinaModel.korsinaList)
+            }
+            job.join() // ждем завершения вложенной сопрограммы
         }
     }
 

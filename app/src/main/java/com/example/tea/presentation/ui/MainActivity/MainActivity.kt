@@ -1,6 +1,5 @@
 package com.example.tea.presentation.ui.MainActivity
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -29,8 +28,9 @@ import com.example.tea.data.storage.korsina.KorsinaImp
 import com.example.tea.databinding.ActivityMainBinding
 import com.example.tea.domain.models.GreetingTextDomainModel
 import com.example.tea.domain.usecase.GetGreetingTextUseCase
-import com.example.tea.domain.usecase.GetKorsinaUseCase
 import com.example.tea.domain.usecase.SaveGreetingTextUseCase
+import com.example.tea.domain.usecase.WorkWithKorzinaUseCase
+import com.example.tea.presentation.gallery.KofeFragment
 import com.example.tea.presentation.ui.ActivityForAdmin.ActivityForAdmin
 import com.example.tea.presentation.ui.korsinadialog.KorsinaDialogFragment
 import com.example.tea.presentation.ui.showproductdialog.ItemKorsina
@@ -45,8 +45,8 @@ class MainActivity : AppCompatActivity() {
     val domainKorsinaInterface by lazy(LazyThreadSafetyMode.NONE) { KorsinaRepository(
         KorsinaImp(this@MainActivity)
     ) }
-    private val getKorsinuUseCase by lazy(LazyThreadSafetyMode.NONE) { GetKorsinaUseCase(domainKorsinaInterface) }
 
+    private val workWithKorzinaUseCase by lazy(LazyThreadSafetyMode.NONE) { WorkWithKorzinaUseCase(domainKorsinaInterface) }
     val domainGreetingInterface by lazy(LazyThreadSafetyMode.NONE) { GreetingTextRepository(
         GreetingTextImp(this@MainActivity)
     ) }
@@ -75,10 +75,16 @@ class MainActivity : AppCompatActivity() {
             if(it!="")  {
                 token = it
                 sendTokenToFragments()
+
+//                this.supportFragmentManager.beginTransaction()
+//                    .add(R.id.nav_host_fragment_content_main, KofeFragment.newInstance())
+//                    .commit()
+
             }
         }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         setSupportActionBar(binding.appBarMain.toolbar)
         binding.appBarMain.fab.setOnClickListener { view ->
             KorsinaDialogFragment.newInstance( // открываем фрагмент корзина
@@ -177,10 +183,22 @@ class MainActivity : AppCompatActivity() {
                 buttonbackground1.setTextColor(Color.BLACK)
             }
         }
+        tokenViewModel.countAddKorsinaLiveData.observe(this){
+            binding.appBarMain.fabText.text = it.toString()
+            binding.appBarMain.fab.backgroundTintList = getColorStateList(R.color.lightred)
+            binding.appBarMain.fabText.setTextColor(getColorStateList(R.color.lightgrey))
+        }
+        tokenViewModel.countDelKorsinaLiveData.observe(this){
+            binding.appBarMain.fabText.text = it.toString()
+            if(it == 0){
+                binding.appBarMain.fab.backgroundTintList = getColorStateList(R.color.lightgrey)
+                binding.appBarMain.fabText.setTextColor(getColorStateList(R.color.brown))
+            }
+        }
     }
 
     fun chekKorsinaColor(){
-        val korsinaDomainModel = getKorsinuUseCase.execute()
+        val korsinaDomainModel = workWithKorzinaUseCase.getBasket()
         finishKorsinsList = korsinaDomainModel.korsinaList
         binding.appBarMain.fabText.text = finishKorsinsList.size.toString()
         if(korsinaDomainModel.korsinaList.size > 0){
@@ -193,8 +211,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun makeKorsinaColorWhite(){
+        binding.appBarMain.fabText.text = "0"
+        binding.appBarMain.fab.backgroundTintList = getColorStateList(R.color.lightgrey)
+        binding.appBarMain.fabText.setTextColor(getColorStateList(R.color.brown))
+    }
+
     override fun onResume() {
         super.onResume()
         chekKorsinaColor()
     }
 }
+
